@@ -1,18 +1,15 @@
 <template>
   <div class="container-fluid" style="background-color: #f9fafc">
-   
-    <div class="container-fluid ">
-      
+    <div class="container-fluid">
       <div
         class="row"
         style="box-shadow: 0 0 30px 8px #96beee40; padding: 10px"
       >
         <div
-          class="col-lg-6 col-md-12 col-sm-12  d-flex justify-content-center align-items-center flex-column"
-          style="height: 80vh;"
-          >
-          <div class="w-100 ">
-          </div>
+          class="col-lg-6 col-md-12 col-sm-12 d-flex justify-content-center align-items-center flex-column"
+          style="height: 80vh"
+        >
+          <div class="w-100"></div>
           <div class="overflow-y-scroll w-100 table-container mt-3">
             <table class="table">
               <thead>
@@ -45,7 +42,7 @@
                   </td>
 
                   <td
-                  class="hover-effect"
+                    class="hover-effect"
                     @click="openUserDetail(task.user)"
                     style="font-size: medium; cursor: pointer"
                   >
@@ -63,15 +60,21 @@
         </div>
         <div
           class="col-lg-6 col-md-12 col-sm-12 mt-3 d-flex flex-column justify-content-center align-items-center"
-          style="
-    height: 80vh;
-"
-          >
+          style="height: 80vh"
+        >
           <div style="box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px">
-            <BarChart v-if="barChartData" :chartData="barChartData" class="barchart" />
+            <BarChart
+              v-if="barChartData"
+              :chartData="barChartData"
+              class="barchart"
+            />
           </div>
           <div>
-            <PieChart v-if="pieChartData" :chartData="pieChartData" class="piechart"/>
+            <PieChart
+              v-if="pieChartData"
+              :chartData="pieChartData"
+              class="piechart"
+            />
           </div>
         </div>
       </div>
@@ -84,7 +87,6 @@ import BarChart from "./BarChart.vue";
 import PieChart from "./PieChart.vue";
 import axios from "axios";
 
-
 export default {
   name: "dashboard",
   components: { BarChart, PieChart },
@@ -92,6 +94,7 @@ export default {
   data() {
     return {
       tableData: [],
+      yes: null,
       barChartData: null, // Bar chart data
       pieChartData: null, // Pie chart data
     };
@@ -111,7 +114,7 @@ export default {
           "http://localhost:5000/api/task/assigned"
         );
         this.tableData = response.data;
-        console.log(this.tableData)
+        console.log(this.tableData);
       } catch (error) {
         console.log("Error while fetching the table data:", error);
       }
@@ -163,8 +166,8 @@ export default {
         console.log(barData);
 
         // Extract labels and data dynamically from the response
-        const labels = Object.keys(barData); 
-        const data = Object.values(barData); 
+        const labels = Object.keys(barData);
+        const data = Object.values(barData);
         console.log(labels);
         console.log(data);
         // Prepare the chartData for BarChart
@@ -270,8 +273,6 @@ export default {
 }
 
 .hover-effect:hover {
-    background-color: lightgray;
+  background-color: lightgray;
 }
-
-
 </style>
