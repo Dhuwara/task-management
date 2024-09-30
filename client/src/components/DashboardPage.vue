@@ -1,54 +1,24 @@
 <template>
   <div class="container-fluid" style="background-color: #f9fafc">
-   
-    <div class="container-fluid ">
-      
-      <div
-        class="row"
-        style="box-shadow: 0 0 30px 8px #96beee40; padding: 10px"
-      >
-        <div
-          class="col-lg-6 col-md-12 col-sm-12  d-flex justify-content-center align-items-center flex-column"
-          style="height: 80vh;"
-          >
-          <div class="w-100 ">
-          </div>
+    <div class="container-fluid">
+      <div class="row" style="box-shadow: 0 0 30px 8px #96beee40; padding: 10px">
+        <div class="col-lg-6 col-md-12 col-sm-12 d-flex justify-content-center align-items-center flex-column" style="height: 80vh;">
+          <div class="w-100"></div>
           <div class="overflow-y-scroll w-100 table-container mt-3">
             <table class="table">
               <thead>
-                <tr
-                  style="
-                    border-bottom: 1px solid lightgray;
-                    background-color: #f6f7f8;
-                  "
-                >
+                <tr style="border-bottom: 1px solid lightgray; background-color: #f6f7f8;">
                   <th style="background-color: #fafafa" scope="col">Tasks</th>
-                  <th style="background-color: #fafafa" scope="col">
-                    Assignee
-                  </th>
+                  <th style="background-color: #fafafa" scope="col">Assignee</th>
                   <th style="background-color: #fafafa" scope="col">Status</th>
                 </tr>
               </thead>
               <tbody>
                 <tr v-for="task in tableData" :key="task._id">
-                  <td
-                    class="hover-effect"
-                    style="
-                      border-bottom: 1px solid lightgray;
-                      height: 42px;
-                      font-size: medium;
-                      cursor: pointer;
-                    "
-                    @click="opeTaskDetail(task._id, task.user)"
-                  >
+                  <td class="hover-effect" style="border-bottom: 1px solid lightgray; height: 42px; font-size: medium; cursor: pointer;" @click="opeTaskDetail(task._id, task.user)">
                     {{ task.title }}
                   </td>
-
-                  <td
-                  class="hover-effect"
-                    @click="openUserDetail(task.user)"
-                    style="font-size: medium; cursor: pointer"
-                  >
+                  <td class="hover-effect" @click="openUserDetail(task.user)" style="font-size: medium; cursor: pointer">
                     {{ task.userName }}
                   </td>
                   <td style="border-bottom: 1px solid lightgray">
@@ -61,12 +31,7 @@
             </table>
           </div>
         </div>
-        <div
-          class="col-lg-6 col-md-12 col-sm-12 mt-3 d-flex flex-column justify-content-center align-items-center"
-          style="
-    height: 80vh;
-"
-          >
+        <div class="col-lg-6 col-md-12 col-sm-12 mt-3 d-flex flex-column justify-content-center align-items-center" style="height: 80vh;">
           <div style="box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px">
             <BarChart v-if="barChartData" :chartData="barChartData" class="barchart" />
           </div>
@@ -79,133 +44,123 @@
   </div>
 </template>
 
-<script>
+<script setup>
 import BarChart from "./BarChart.vue";
 import PieChart from "./PieChart.vue";
 import axios from "axios";
+import { ref, onMounted } from "vue";
+import { useRouter, useRoute } from "vue-router";
 
+const tableData = ref([]);
+const barChartData = ref(null); // Bar chart data
+const pieChartData = ref(null); // Pie chart data
 
-export default {
-  name: "dashboard",
-  components: { BarChart, PieChart },
+const router = useRouter();
+const route = useRoute();
 
-  data() {
-    return {
-      tableData: [],
-      barChartData: null, // Bar chart data
-      pieChartData: null, // Pie chart data
+onMounted(() => {
+  fetchUserWithTask();
+  fetchPieChartData(); // Fetch pie chart data
+  fetchBarChartData(); // Fetch bar chart data
+  fetchUserDetails();
+});
+
+const fetchUserWithTask = async () => {
+  try {
+    const response = await axios.get("http://localhost:5000/api/task/assigned");
+    tableData.value = response.data; // Update reactive reference
+    console.log(tableData.value);
+  } catch (error) {
+    console.log("Error while fetching the table data:", error);
+  }
+};
+
+const statusClass = (status) => {
+  if (status === "in-progress") {
+    return "status-in-progress";
+  } else if (status === "pending") {
+    return "status-pending";
+  } else if (status === "completed") {
+    return "status-completed";
+  } else {
+    return "";
+  }
+};
+
+const fetchPieChartData = async () => {
+  try {
+    const response = await axios.get("http://localhost:5000/api/task/countofstatus");
+    const pieData = response.data;
+
+    // Extract labels and data dynamically from the response
+    const labels = Object.keys(pieData);
+    const data = Object.values(pieData);
+
+    // Update pie chart data
+    pieChartData.value = {
+      labels: labels,
+      datasets: [
+        {
+          data: data,
+          backgroundColor: ["#ff6384", "#36a2eb", "#cc65fe"], // Customize colors
+        },
+      ],
     };
-  },
+  } catch (error) {
+    console.log("Error while fetching pie chart data:", error);
+  }
+};
 
-  created() {
-    this.fetchUserWithTask();
-    this.fetchPieChartData(); // Fetch pie chart data
-    this.fetchBarChartData(); // Fetch bar chart data
-    this.fetchUserDetails();
-  },
+const fetchBarChartData = async () => {
+  try {
+    const response = await axios.get("http://localhost:5000/api/users/user/d/getusercount");
+    const barData = response.data;
 
-  methods: {
-    async fetchUserWithTask() {
-      try {
-        const response = await axios.get(
-          "http://localhost:5000/api/task/assigned"
-        );
-        this.tableData = response.data;
-        console.log(this.tableData)
-      } catch (error) {
-        console.log("Error while fetching the table data:", error);
-      }
-    },
-    statusClass(status) {
-      if (status === "in-progress") {
-        return "status-in-progress";
-      } else if (status === "pending") {
-        return "status-pending";
-      } else if (status === "completed") {
-        return "status-completed";
-      } else {
-        return "";
-      }
-    },
+    // Extract labels and data dynamically from the response
+    const labels = Object.keys(barData);
+    const data = Object.values(barData);
+    console.log(labels);
+    console.log(data);
 
-    async fetchPieChartData() {
-      try {
-        const response = await axios.get(
-          "http://localhost:5000/api/task/countofstatus"
-        );
-        const pieData = response.data;
+    // Prepare the chartData for BarChart
+    barChartData.value = {
+      labels: labels,
+      datasets: [
+        {
+          label: "User Count",
+          data: data,
+          backgroundColor: ["#ff6384", "#36a2eb", "#cc65fe"], // Customize colors
+        },
+      ],
+    };
+  } catch (error) {
+    console.log("Error while fetching bar chart data:", error);
+  }
+};
 
-        // Extract labels and data dynamically from the response
-        const labels = Object.keys(pieData); // e.g., ['in-progress', 'pending', 'completed']
-        const data = Object.values(pieData); // e.g., [3, 14, 3]
+const openUserDetail = (userId) => {
+  router.push(`/userdetail/${userId}`);
+};
 
-        // Update pie chart data
-        this.pieChartData = {
-          labels: labels,
-          datasets: [
-            {
-              data: data,
-              backgroundColor: ["#ff6384", "#36a2eb", "#cc65fe"], // Customize colors
-            },
-          ],
-        };
-      } catch (error) {
-        console.log("Error while fetching pie chart data:", error);
-      }
-    },
+const opeTaskDetail = (taskId, userId) => {
+  router.push(`/userdetail/${userId}/taskdetail/${taskId}`);
+};
 
-    async fetchBarChartData() {
-      try {
-        const response = await axios.get(
-          "http://localhost:5000/api/users/user/d/getusercount"
-        );
-        const barData = response.data;
-        console.log(barData);
-
-        // Extract labels and data dynamically from the response
-        const labels = Object.keys(barData); 
-        const data = Object.values(barData); 
-        console.log(labels);
-        console.log(data);
-        // Prepare the chartData for BarChart
-        this.barChartData = {
-          labels: labels,
-          datasets: [
-            {
-              label: "User Count",
-              data: data,
-              backgroundColor: ["#ff6384", "#36a2eb", "#cc65fe"], // Customize colors
-            },
-          ],
-        };
-      } catch (error) {
-        console.log("Error while fetching bar chart data:", error);
-      }
-    },
-    openUserDetail(userId) {
-      this.$router.push(`/userdetail/${userId}`);
-    },
-    opeTaskDetail(taskid, userid) {
-      this.$router.push(`/userdetail/${userid}/taskdetail/${taskid}`);
-    },
-
-    async fetchUserDetails() {
-      const userId = this.$route.params.id;
-      console.log(userId);
-      try {
-        const response = await axios.get(
-          `http://localhost:5000/api/users/${userId}`
-        );
-        this.user = response.data;
-        console.log(this.user);
-      } catch (error) {
-        console.error("Error fetching the user details:", error);
-      }
-    },
-  },
+const fetchUserDetails = async () => {
+  const userId = route.params.id;
+  console.log(userId);
+  console.log(route.params); 
+  try {
+    const response = await axios.get(`http://localhost:5000/api/users/${userId}`);
+    // Assuming you have a user ref to store this data
+    // const user = ref(null);
+    // user.value = response.data;
+    console.log(response.data);
+  } catch (error) {
+    console.error("Error fetching the user details:", error);
+  }
 };
 </script>
-
 <style>
 .table-container {
   overflow-y: auto;

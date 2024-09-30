@@ -49,14 +49,12 @@
   </div>
 </template>
 
-<script>
+<script setup>
 import axios from "axios";
 import { ref, onMounted, computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
-export default {
-  name: "TaskDetails",
-  setup() {
+
     const route = useRoute();
     const router = useRouter();
 
@@ -122,15 +120,7 @@ export default {
       fetchUserDetails();
     });
 
-    return {
-      task,
-      user,
-      closeTaskDetails,
-      formattedDueDate,
-      statusClass,
-    };
-  },
-};
+    
 </script>
 
 <style scoped>

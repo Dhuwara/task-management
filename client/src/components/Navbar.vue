@@ -13,17 +13,13 @@
 </nav>
 </template>
 
-<script>
+<script setup>
 import router from '@/router';
 
-export default{
-  methods:{
-    openHome(){
+  const openHome =  ()=>{
       router.push('/')
     }
-  }
-}
-
+ 
 </script>
 <style scoped>
 
