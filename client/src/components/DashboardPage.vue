@@ -59,10 +59,18 @@
         </div>
         <div class="col-lg-6 col-md-12 col-sm-12 mt-3 d-flex flex-column justify-content-center align-items-center" style="height: 80vh;">
           <div style="box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px">
-            <BarChart v-if="barChartData" :chartData="barChartData" class="barchart" />
+            <BarChart
+              v-if="barChartData"
+              :chartData="barChartData"
+              class="barchart"
+            />
           </div>
           <div>
-            <PieChart v-if="pieChartData" :chartData="pieChartData" class="piechart"/>
+            <PieChart
+              v-if="pieChartData"
+              :chartData="pieChartData"
+              class="piechart"
+            />
           </div>
         </div>
       </div>
@@ -307,8 +315,6 @@ const deleteTask = async (taskId) => {
 }
 
 .hover-effect:hover {
-    background-color: lightgray;
+  background-color: lightgray;
 }
-
-
 </style>
