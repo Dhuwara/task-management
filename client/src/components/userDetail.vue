@@ -117,10 +117,11 @@ import { useRoute, useRouter } from 'vue-router';
       try {
         const response = await axios.get(`http://localhost:5000/api/users/user/${userId}`);
         user.value = response.data;
-
+        console.log(user.value)
         // Ensure task_ids is always an array
         const taskIds = Array.isArray(user.value.task_ids) ? user.value.task_ids : [user.value.task_ids];
         const taskPromises = taskIds.map(async (taskId) => {
+          console.log(taskId)
           const taskResponse = await axios.get(`http://localhost:5000/api/task/tasks/${taskId}`);
           return { id: taskId, title: taskResponse.data.title };
         });

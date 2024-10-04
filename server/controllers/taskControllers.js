@@ -1,16 +1,16 @@
 const task = require('../modals/task.model.js')
-const users = require('../modals/user.js')
+const user = require('../modals/user.js')
 exports.getAlltask = async (req, res) => {
     try {
-        const tasks = await task.find({})
-        res.send(tasks)
+        const tasks = await task.find({});
+        res.send(tasks);
     } catch (error) {
-        res.status(500).send(error)
+        // Send a structured error response
+        res.status(500).send({ message: 'Database error', error: error.message });
     }
-}
+};
 
 exports.getTasksWithUserNames = async (req, res) => {
-   
     try {
         const tasksWithUsers = await task.aggregate([
             {
@@ -31,23 +31,24 @@ exports.getTasksWithUserNames = async (req, res) => {
                 $project: {
                     title: 1,
                     description: 1,
-                    user:1,
-                    status:1,
-                    
-                    
+                    user: 1,
+                    status: 1,
                     'userName': { $concat: ['$userDetails.name'] } // Concatenate user name
                 }
             }
         ]);
 
         res.json(tasksWithUsers);
+        console.log(tasksWithUsers,"taskwithofwef")
     } catch (error) {
-        res.status(500).json({ message: 'Error fetching tasks with user names', error });
+        // Send the error message and type consistently
+        res.status(500).json({ message: 'Error fetching tasks with user names', error: error.message });
     }
 };
 
+
 exports.countOfStatus = async (req,res)=>{
-    
+   
     try {
         const tasks = await task.find({});
         
@@ -65,61 +66,100 @@ exports.countOfStatus = async (req,res)=>{
 
         res.json(statusCounts);
     } catch (error) {
-        console.error(error);
+       
         res.status(500).json({ error: 'An error occurred while counting statuses.' });
     }
 }
 
+
+
+
 exports.getTaskById = async (req, res) => {
     try {
         const { id } = req.params;
-        const taskItem = await task.findById(id);
+        const taskItem = await task.findById(id); // Use the correct model reference
         if (!taskItem) {
-            return res.status(404).send({ message: 'Task not found' });
+            return res.status(404).json({ message: 'Task not found' }); // Use json() for consistency
         }
-        res.send(taskItem);
+        res.status(200).json(taskItem); // Send back the task item with a 200 status
     } catch (error) {
-        res.status(500).send(error);
+        res.status(500).json({ message: 'Error fetching task', error }); // Improved error response
     }
 };
 
 
-exports.getUserNameByTaskId = async (req, res) => {
+
+
+
+exports.assignTask = async(req,res)=>{
+    try{
+        console.log(req.body)
+        const newtask = await task.create(req.body)
+        
+        console.log('task assigned',newtask._id)
+        await user.findByIdAndUpdate(req.body.user,{$addToSet:{task_ids:newtask._id}},{new:true})
+        res.status(200).json(newtask)
+    }catch(error){
+        res.status(500).json({message:error.message})
+    }
+}
+
+exports.deletetask =  async (req, res) => {
+    const taskId = req.params.id;
+    console.log(taskId)
+
     try {
-        const { taskId } = req.params; // Extract taskId from request parameters
-        const result = await task.aggregate([
-            {
-                $match: { _id: mongoose.Types.ObjectId(taskId) } // Match the task ID
-            },
-            {
-                $lookup: {
-                    from: 'users', // User collection name
-                    localField: 'user', // Field in tasks collection
-                    foreignField: '_id', // Field in users collection
-                    as: 'userInfo'
-                }
-            },
-            {
-                $unwind: {
-                    path: '$userInfo',
-                    preserveNullAndEmptyArrays: true
-                }
-            },
-            {
-                $project: {
-                    _id: 0,
-                    userName: '$userInfo.name' // Select the user's name
-                }
-            }
-        ]);
+        // Find the task by its ID
+        const tasks = await task.findById(taskId);
+        console.log(tasks,"tasksdelete")
 
-        if (result.length > 0) {
-            res.json(result[0]); // Return the user's name
-        } else {
-            res.status(404).json({ message: 'Task or user not found' });
+        if (!tasks) {
+            return res.status(404).json({ message: 'Task not found' });
         }
+
+        // Get the user ID from the task
+        const userId = tasks.user;
+
+        // Delete the task from the tasks collection
+        await task.findByIdAndDelete(taskId);
+
+        // Remove the task ID from the user's task_ids array
+        await user.findByIdAndUpdate(
+            userId,
+            { $pull: { task_ids: taskId } },
+            { new: true }
+        );
+
+        res.status(200).json({ message: 'Task deleted successfully' });
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Error fetching user name by task ID', error });
+       
+        res.status(500).json({ message: 'Internal Server Error' });
     }
-};
+}
+
+// PUT API to partially update a task by its ID
+
+exports.updateTask =  async (req, res) => {
+    const taskId = req.params.id;
+    const updateFields = req.body; // This will contain only the fields that need to be updated
+  
+    try {
+      // Find the task by ID and update only the fields that are provided
+      const updatedTask = await task.findByIdAndUpdate(
+        taskId,
+        { $set: updateFields }, // Only update the provided fields
+        { new: true } // Return the updated document
+      );
+  
+      if (!updatedTask) {
+        return res.status(404).json({ message: 'Task not found' });
+      }
+  
+      // Send the updated task back as the response
+      res.status(200).json(updatedTask);
+    } catch (error) {
+      
+      res.status(500).json({ message: 'Server error' });
+    }
+}
+  

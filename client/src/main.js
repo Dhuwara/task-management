@@ -9,8 +9,10 @@ import { faCalendar as faRegularCalendar } from '@fortawesome/free-regular-svg-i
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { faPenToSquare } from '@fortawesome/free-solid-svg-icons';
 import { faEye } from '@fortawesome/free-solid-svg-icons';
+import { faPlus } from '@fortawesome/free-solid-svg-icons';
+
 // Add icons to the library
-library.add(faUser, faEnvelope, faPhone, faMapMarkerAlt, faRegularCalendar, faTimes, faPenToSquare,faEye);
+library.add(faUser, faEnvelope, faPhone, faMapMarkerAlt, faRegularCalendar, faTimes, faPenToSquare,faEye,faPlus);
 
 
 const app = createApp(App);

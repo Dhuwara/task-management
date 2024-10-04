@@ -19,10 +19,12 @@ mongoose.connect('mongodb+srv://dhuwadhuruvan:Dhuwa@cluster0.ldcnj.mongodb.net/?
 app.use('/api/users', userRoutes);
 app.use('/api/task', taskRoutes);
 
-// Start the server
-const PORT = 5000;
-app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-});
 
+
+const PORT = 5000;
+
+
+  app.listen(PORT, () => {
+      console.log(`Server running on port ${PORT}`);
+  });
 module.exports = app;

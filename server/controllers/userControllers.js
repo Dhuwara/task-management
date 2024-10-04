@@ -2,12 +2,13 @@ const user = require('../modals/user.js')
 const Task = require('../modals/task.model.js')
 
 exports.getAllUser = async (req, res) => {
+    console.log(req.body,"finduseres")
     try {
         const users = await user.find({})
         res.send(users)
 
     } catch (error) {
-        res.status(500).send(error)
+        res.status(500).json({ error: 'Database error' });
     }
 }
 
@@ -24,21 +25,26 @@ exports.getAllUsersWithTasks = async (req, res) => {
             }
         ]);
         res.json(users);
+        console.log(users,"veliya vaada ")
     } catch (error) {
-        res.status(500).json({ message: 'Error fetching users and tasks', error });
+        res.status(500).json({ message: 'Database error' });
     }
 };
 
-exports.getUserById = async(req,res)=>{
-    try{
-        const {id} = req.params;
-    const userdetails = await user.findById(id)
-    res.send(userdetails)
-    }catch(error){
-        res.status(500).send(error)
-    }
+exports.getUserById = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const userDetails = await user.findById(id);
+        
+        if (!userDetails) {
+            return res.status(404).json({ message: 'User not found' });
+        }
 
-}
+        res.json(userDetails);
+    } catch (error) {
+        res.status(500).json({ message: 'Error fetching user', error });
+    }
+};
 
 exports.getUsersWithTaskCount = async (req, res) => {
     try {
@@ -46,7 +52,7 @@ exports.getUsersWithTaskCount = async (req, res) => {
             {
                 $project: {
                     name: 1,
-                    numberOfTasks: { $size: "$task_ids" }
+                    numberOfTasks: { $size: "$task_ids" },
                 }
             },
             {
@@ -67,7 +73,18 @@ exports.getUsersWithTaskCount = async (req, res) => {
 
         res.json(result);
     } catch (error) {
-        res.status(500).json({ message: 'Error fetching users', error });
+        res.status(500).json({ message: 'Database error' });
     }
 };
+
+
+exports.getAllUserDetails = async (req, res) => {
+    try {
+        const users = await user.find({},{_id:1,name:1})
+        res.send(users)
+
+    } catch (error) {
+        res.status(500).json({ message: 'Database error', error });
+    }
+}
 

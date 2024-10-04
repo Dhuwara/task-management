@@ -3,7 +3,16 @@
     <div class="container-fluid">
       <div class="row" style="box-shadow: 0 0 30px 8px #96beee40; padding: 10px">
         <div class="col-lg-6 col-md-12 col-sm-12 d-flex justify-content-center align-items-center flex-column" style="height: 80vh;">
-          <div class="w-100"></div>
+          <div class="w-100 d-flex justify-content-between align-items-center">
+            <h1>Tasks</h1>
+          <router-link  :to="`/addtask`">
+              <button type="button" style="
+    border: none;
+    background-color: transparent;">
+        <font-awesome-icon icon="plus" style="color: blue; cursor: pointer;" @click="addTask"   />
+      </button>
+            </router-link>
+          </div>
           <div class="overflow-y-scroll w-100 table-container mt-3">
             <table class="table">
               <thead>
@@ -11,6 +20,7 @@
                   <th style="background-color: #fafafa" scope="col">Tasks</th>
                   <th style="background-color: #fafafa" scope="col">Assignee</th>
                   <th style="background-color: #fafafa" scope="col">Status</th>
+                  <th style="background-color: #fafafa" scope="col">Action</th>
                 </tr>
               </thead>
               <tbody>
@@ -24,6 +34,22 @@
                   <td style="border-bottom: 1px solid lightgray">
                     <div :class="statusClass(task.status)" class="status-btn">
                       {{ task.status }}
+                      
+                    </div>
+                  </td>
+                  <td>
+                    <div>
+                      <font-awesome-icon icon="times" class="delete-icon" @click="deleteTask(task._id)" />
+                     
+                      <!-- Button to open the modal -->
+                      <router-link :to="`/updatetask/${task._id}`">
+
+        <button type="button" class="btn" >
+        <font-awesome-icon icon="pen-to-square" class="edit-icon"  />
+      </button>
+      </router-link>
+
+    
                     </div>
                   </td>
                 </tr>
@@ -41,6 +67,7 @@
         </div>
       </div>
     </div>
+    <router-view></router-view>
   </div>
 </template>
 
@@ -51,9 +78,13 @@ import axios from "axios";
 import { ref, onMounted } from "vue";
 import { useRouter, useRoute } from "vue-router";
 
+
+
+
 const tableData = ref([]);
 const barChartData = ref(null); // Bar chart data
 const pieChartData = ref(null); // Pie chart data
+const userData = ref({})
 
 const router = useRouter();
 const route = useRoute();
@@ -63,7 +94,20 @@ onMounted(() => {
   fetchPieChartData(); // Fetch pie chart data
   fetchBarChartData(); // Fetch bar chart data
   fetchUserDetails();
+  userdetails()
 });
+
+
+const isModalVisible = ref(false);
+
+const showModal = () => {
+  isModalVisible.value = true;
+};
+
+const hideModal = () => {
+  isModalVisible.value = false;
+};
+
 
 const fetchUserWithTask = async () => {
   try {
@@ -160,6 +204,44 @@ const fetchUserDetails = async () => {
     console.error("Error fetching the user details:", error);
   }
 };
+
+const addTask = ()=>{
+  console.log("addtask")
+  router.push('/addtask')
+}
+
+// const updateTask = (id)=>{
+//   console.log("updatetask")
+//   router.push(`/updatetask/${id}`)
+// }
+const userdetails = async () => {
+  try {
+    const response = await axios.get("http://localhost:5000/api/users/userdetails");
+    userData.value = response.data; // Update reactive reference
+    console.log(userData.value);
+  } catch (error) {
+    console.log("Error while fetching the table data:", error);
+  }
+};
+
+const deleteTask = async (taskId) => {
+  console.log(taskId)
+  try {
+    const response = await axios.delete(`http://localhost:5000/api/task/deletetask/${taskId}`);
+    console.log('Task deleted:', response.data);
+
+    // Optionally, you can filter the deleted task from the tableData
+    tableData.value = tableData.value.filter(task => task._id !== taskId);
+
+    // Display a success message
+    console.log("Task successfully deleted");
+
+  } catch (error) {
+    console.error('Error deleting task:', error);
+    // Handle the error (e.g., show an error message)
+  }
+};
+
 </script>
 <style>
 .table-container {

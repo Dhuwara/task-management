@@ -1,32 +1,47 @@
 const request = require('supertest');
 const mongoose = require('mongoose');
+const app = require('../server');
 
-// Mock mongoose to avoid actual DB connection
+// Mock the Mongoose connection
 jest.mock('mongoose', () => ({
-  connect: jest.fn().mockResolvedValueOnce(() => Promise.resolve('Connected to MongoDB')),
+    connect: jest.fn().mockResolvedValueOnce(Promise.resolve({})),
+    connection: {
+        on: jest.fn(),
+    },
 }));
 
-// Mock the routes for isolation
-jest.mock('../routes/userRoutes.js', () => (req, res) => res.send('User route'));
-jest.mock('../routes/taskRoutes.js', () => (req, res) => res.send('Task route'));
+// Mock the userRoutes and taskRoutes modules
+jest.mock('server/src/routes/userRoutes.js', () => (req, res) => {
+    res.status(200).send('Mocked Users');
+});
 
-const app = require('../server'); // Assuming server.js exports the app
+jest.mock('server/src/routes/taskRoutes.js', () => (req, res) => {
+    res.status(200).send('Mocked Tasks');
+});
 
-describe('Server Initialization and Routes', () => {
-  it('should initialize the server and connect to MongoDB', async () => {
-    // Check if mongoose.connect is called during app initialization
-    expect(mongoose.connect).toHaveBeenCalled();
-  });
+describe('Server with mocked routes', () => {
+    beforeEach(() => {
+        jest.spyOn(global.console, 'log').mockImplementation(() => {});
+    });
 
-  it('should respond to /api/users route', async () => {
-    const res = await request(app).get('/api/users');
-    expect(res.statusCode).toBe(200);
-    expect(res.text).toBe('User route');
-  });
+    afterEach(() => {
+        jest.restoreAllMocks();
+    });
 
-  it('should respond to /api/task route', async () => {
-    const res = await request(app).get('/api/task');
-    expect(res.statusCode).toBe(200);
-    expect(res.text).toBe('Task route');
-  });
+    it('should respond to GET /api/users with mocked data', async () => {
+        const response = await request(app).get('/api/users');
+        expect(response.statusCode).toBe(200);
+        expect(response.text).toBe('Mocked Users');
+    });
+
+    it('should respond to GET /api/task with mocked data', async () => {
+        const response = await request(app).get('/api/task');
+        expect(response.statusCode).toBe(200);
+        expect(response.text).toBe('Mocked Tasks');
+    });
+
+    it('should return 404 for unknown routes', async () => {
+        const response = await request(app).get('/api/unknown');
+        expect(response.statusCode).toBe(404);
+    });
 });

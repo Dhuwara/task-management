@@ -15,7 +15,6 @@
 
 <script setup>
 import router from '@/router';
-
   const openHome =  ()=>{
       router.push('/')
     }
