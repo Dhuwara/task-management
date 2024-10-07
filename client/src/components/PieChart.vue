@@ -1,7 +1,7 @@
 <template>
-  <div style="height: 300px; margin-top: 10px;  width: 100% !important;">
+  <div style="height: 300px; margin-top: 10px;  width: 100% !important;" >
     <!-- Only render the Pie chart if chartData is available -->
-    <Pie v-if="chartData" :data="chartData" :options="chartOptions" />
+    <Pie id="mychart" v-if="chartData" :data="chartData" :options="chartOptions" />
   </div>
 </template>
 
@@ -27,6 +27,7 @@ export default {
         responsive: true,
         plugins: {
           legend: {
+            display: true,
             position: 'bottom',
           },
          

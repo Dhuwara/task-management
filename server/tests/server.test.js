@@ -1,27 +1,27 @@
-const request = require('supertest');
-const mongoose = require('mongoose');
-const app = require('../server');
+import request from 'supertest';
+import mongoose from 'mongoose';
 
-// Mock the Mongoose connection
+import { app } from '../server'; // Import the app
+// Mock Mongoose connection
 jest.mock('mongoose', () => ({
-    connect: jest.fn().mockResolvedValueOnce(Promise.resolve({})),
+    connect: jest.fn().mockResolvedValue({}),
     connection: {
         on: jest.fn(),
     },
 }));
 
 // Mock the userRoutes and taskRoutes modules
-jest.mock('server/src/routes/userRoutes.js', () => (req, res) => {
+jest.mock('../routes/userRoutes', () => (req, res) => {
     res.status(200).send('Mocked Users');
 });
 
-jest.mock('server/src/routes/taskRoutes.js', () => (req, res) => {
+jest.mock('../routes/taskRoutes', () => (req, res) => {
     res.status(200).send('Mocked Tasks');
 });
 
 describe('Server with mocked routes', () => {
     beforeEach(() => {
-        jest.spyOn(global.console, 'log').mockImplementation(() => {});
+        jest.spyOn(console, 'log').mockImplementation(() => {}); // Mute console.log during testing
     });
 
     afterEach(() => {

@@ -118,9 +118,10 @@ import { useRoute, useRouter } from "vue-router";
     onMounted(() => {
       fetchTaskDetails();
       fetchUserDetails();
+     
     });
 
-    
+    console.log("sucecessonmounted")
 </script>
 
 <style scoped>

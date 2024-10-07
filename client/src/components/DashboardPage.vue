@@ -5,12 +5,10 @@
         <div class="col-lg-6 col-md-12 col-sm-12 d-flex justify-content-center align-items-center flex-column" style="height: 80vh;">
           <div class="w-100 d-flex justify-content-between align-items-center">
             <h1>Tasks</h1>
-          <router-link  :to="`/addtask`">
-              <button type="button" style="
-    border: none;
-    background-color: transparent;">
-        <font-awesome-icon icon="plus" style="color: blue; cursor: pointer;" @click="addTask"   />
-      </button>
+            <router-link :to="`/addtask`">
+              <button type="button" style="border: none; background-color: transparent;">
+                <font-awesome-icon icon="plus" style="color: blue; cursor: pointer;" />
+              </button>
             </router-link>
           </div>
           <div class="overflow-y-scroll w-100 table-container mt-3">
@@ -25,7 +23,7 @@
               </thead>
               <tbody>
                 <tr v-for="task in tableData" :key="task._id">
-                  <td class="hover-effect" style="border-bottom: 1px solid lightgray; height: 42px; font-size: medium; cursor: pointer;" @click="opeTaskDetail(task._id, task.user)">
+                  <td class="hover-effect" style="border-bottom: 1px solid lightgray; height: 42px; font-size: medium; cursor: pointer;" @click="openTaskDetail(task._id, task.user)">
                     {{ task.title }}
                   </td>
                   <td class="hover-effect" @click="openUserDetail(task.user)" style="font-size: medium; cursor: pointer">
@@ -34,22 +32,16 @@
                   <td style="border-bottom: 1px solid lightgray">
                     <div :class="statusClass(task.status)" class="status-btn">
                       {{ task.status }}
-                      
                     </div>
                   </td>
                   <td>
                     <div>
                       <font-awesome-icon icon="times" class="delete-icon" @click="deleteTask(task._id)" />
-                     
-                      <!-- Button to open the modal -->
                       <router-link :to="`/updatetask/${task._id}`">
-
-        <button type="button" class="btn" >
-        <font-awesome-icon icon="pen-to-square" class="edit-icon"  />
-      </button>
-      </router-link>
-
-    
+                        <button type="button" class="btn">
+                          <font-awesome-icon icon="pen-to-square" class="edit-icon" />
+                        </button>
+                      </router-link>
                     </div>
                   </td>
                 </tr>
@@ -86,44 +78,33 @@ import axios from "axios";
 import { ref, onMounted } from "vue";
 import { useRouter, useRoute } from "vue-router";
 
-
-
-
 const tableData = ref([]);
-const barChartData = ref(null); // Bar chart data
-const pieChartData = ref(null); // Pie chart data
-const userData = ref({})
+const barChartData = ref(null);
+const pieChartData = ref(null);
+const userData = ref({});
 
 const router = useRouter();
 const route = useRoute();
 
-onMounted(() => {
-  fetchUserWithTask();
-  fetchPieChartData(); // Fetch pie chart data
-  fetchBarChartData(); // Fetch bar chart data
-  fetchUserDetails();
-  userdetails()
+onMounted(async () => {
+  await fetchUserWithTask();
+  await fetchPieChartData();
+  await fetchBarChartData();
+  await userdetails();
 });
 
-
+// Modal visibility
 const isModalVisible = ref(false);
-
-const showModal = () => {
-  isModalVisible.value = true;
-};
-
-const hideModal = () => {
-  isModalVisible.value = false;
-};
-
+const showModal = () => { isModalVisible.value = true; };
+const hideModal = () => { isModalVisible.value = false; };
 
 const fetchUserWithTask = async () => {
   try {
     const response = await axios.get("http://localhost:5000/api/task/assigned");
-    tableData.value = response.data; // Update reactive reference
+    tableData.value = response.data;
     console.log(tableData.value);
   } catch (error) {
-    console.log("Error while fetching the table data:", error);
+    console.error("Error while fetching the table data:", error);
   }
 };
 
@@ -143,23 +124,19 @@ const fetchPieChartData = async () => {
   try {
     const response = await axios.get("http://localhost:5000/api/task/countofstatus");
     const pieData = response.data;
-
-    // Extract labels and data dynamically from the response
     const labels = Object.keys(pieData);
     const data = Object.values(pieData);
-
-    // Update pie chart data
     pieChartData.value = {
       labels: labels,
       datasets: [
         {
           data: data,
-          backgroundColor: ["#ff6384", "#36a2eb", "#cc65fe"], // Customize colors
+          backgroundColor: ["#ff6384", "#36a2eb", "#cc65fe"],
         },
       ],
     };
   } catch (error) {
-    console.log("Error while fetching pie chart data:", error);
+    console.error("Error while fetching pie chart data:", error);
   }
 };
 
@@ -167,26 +144,22 @@ const fetchBarChartData = async () => {
   try {
     const response = await axios.get("http://localhost:5000/api/users/user/d/getusercount");
     const barData = response.data;
-
-    // Extract labels and data dynamically from the response
     const labels = Object.keys(barData);
     const data = Object.values(barData);
     console.log(labels);
     console.log(data);
-
-    // Prepare the chartData for BarChart
     barChartData.value = {
       labels: labels,
       datasets: [
         {
           label: "User Count",
           data: data,
-          backgroundColor: ["#ff6384", "#36a2eb", "#cc65fe"], // Customize colors
+          backgroundColor: ["#ff6384", "#36a2eb", "#cc65fe"],
         },
       ],
     };
   } catch (error) {
-    console.log("Error while fetching bar chart data:", error);
+    console.error("Error while fetching bar chart data:", error);
   }
 };
 
@@ -194,63 +167,33 @@ const openUserDetail = (userId) => {
   router.push(`/userdetail/${userId}`);
 };
 
-const opeTaskDetail = (taskId, userId) => {
+const openTaskDetail = (taskId, userId) => {
   router.push(`/userdetail/${userId}/taskdetail/${taskId}`);
 };
 
-const fetchUserDetails = async () => {
-  const userId = route.params.id;
-  console.log(userId);
-  console.log(route.params); 
-  try {
-    const response = await axios.get(`http://localhost:5000/api/users/${userId}`);
-    // Assuming you have a user ref to store this data
-    // const user = ref(null);
-    // user.value = response.data;
-    console.log(response.data);
-  } catch (error) {
-    console.error("Error fetching the user details:", error);
-  }
-};
-
-const addTask = ()=>{
-  console.log("addtask")
-  router.push('/addtask')
-}
-
-// const updateTask = (id)=>{
-//   console.log("updatetask")
-//   router.push(`/updatetask/${id}`)
-// }
 const userdetails = async () => {
   try {
     const response = await axios.get("http://localhost:5000/api/users/userdetails");
-    userData.value = response.data; // Update reactive reference
+    userData.value = response.data;
     console.log(userData.value);
   } catch (error) {
-    console.log("Error while fetching the table data:", error);
+    console.error("Error while fetching user details:", error);
   }
 };
 
 const deleteTask = async (taskId) => {
-  console.log(taskId)
+  console.log(taskId);
   try {
     const response = await axios.delete(`http://localhost:5000/api/task/deletetask/${taskId}`);
     console.log('Task deleted:', response.data);
-
-    // Optionally, you can filter the deleted task from the tableData
     tableData.value = tableData.value.filter(task => task._id !== taskId);
-
-    // Display a success message
     console.log("Task successfully deleted");
-
   } catch (error) {
     console.error('Error deleting task:', error);
-    // Handle the error (e.g., show an error message)
   }
 };
-
 </script>
+
 <style>
 .table-container {
   overflow-y: auto;
@@ -270,7 +213,6 @@ const deleteTask = async (taskId) => {
 .status-btn {
   border-radius: 20px;
   background-color: #ff5a5a;
-
   width: 100px;
   height: 42px;
   padding: 0;

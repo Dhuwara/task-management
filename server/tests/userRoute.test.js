@@ -10,8 +10,8 @@ let mongoServer;
 beforeAll(async () => {
     mongoServer = await MongoMemoryServer.create();
     const uri = mongoServer.getUri();
-
-    // Connect to the in-memory MongoDB only if not already connected
+    console.log("MongoDB Mock Server URI:", uri);  // Add this to verify
+    
     if (mongoose.connection.readyState === 0) {
         await mongoose.connect(uri, { useNewUrlParser: true, useUnifiedTopology: true });
     }

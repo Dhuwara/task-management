@@ -96,7 +96,7 @@
   };
   
  
-
+  formData.user
 // Handle form submission
 const submitTask = async () => {
   console.log('Form Data:', formData.value);
@@ -123,10 +123,6 @@ const submitTask = async () => {
     // Handle error during the request
     console.error('Error submitting task:', error);
 
-    // Show the error toast
-    const errorToastElement = document.getElementById('errorToast');
-    const errorToast = new bootstrap.Toast(errorToastElement);
-    errorToast.show(); // Show the error toast
   }
 };
 
