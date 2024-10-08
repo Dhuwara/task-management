@@ -1,5 +1,5 @@
 <template>
-    <div class="modal fade show" tabindex="-1" style="display: block;" aria-modal="true" role="dialog">
+    <div class="modal fade show" tabindex="-1" style="display: block;" aria-modal="true" role="dialog" data-testid="add-task-component">
       <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header">
@@ -17,14 +17,17 @@
         <form @submit.prevent="submitTask">
               <div class="mb-3">
                 
+                <label for="taskAssignee" class="form-label">User</label>
 
-                    <label for="taskAssignee" class="form-label">User</label>
 
-    <select v-model="formData.user" class="form-select" id="taskAssignee">
+                <select data-testid="user-select" aria-label="User" v-model="formData.user">
   <option v-for="assignee in assignees" :key="assignee.id" :value="assignee._id">
     {{ assignee.name }}
   </option>
 </select>
+
+
+
               </div>
               <div class="mb-3">
                 <label for="taskTitle" class="form-label">title</label>
@@ -70,6 +73,7 @@
   import bootstrap from 'bootstrap/dist/js/bootstrap.bundle';
   import axios from 'axios';
   import { useRouter } from 'vue-router';
+  import { watch } from 'vue';
   
   // Define reactive form data using ref
   const formData = ref({
@@ -89,6 +93,7 @@
       // Simulate an API call (replace with your actual API request)
       const response = await axios.get('http://localhost:5000/api/users/userdetails'); // Change to your real endpoint
       assignees.value = response.data; // Assuming the API returns an array of assignees
+      
       console.log(assignees.value,"values")
     } catch (error) {
       console.error('Error fetching assignees:', error);
@@ -98,33 +103,29 @@
  
   formData.user
 // Handle form submission
+// Handle form submission
 const submitTask = async () => {
-  console.log('Form Data:', formData.value);
+  console.log('Form Data being submitted:', formData.value);
+  console.log('User selected:', formData.value.user); // Log the selected user ID
 
   try {
     // Send the POST request to your API
-    const response = await axios.post('http://localhost:5000/api/task/addtask', formData.value); // Replace with your actual API endpoint
+    const response = await axios.post('http://localhost:5000/api/task/addtask', formData.value);
 
     // Log the response from the server
     console.log('Task successfully submitted:', response.data);
-
+    console.log('User selected:', formData.value.user); // or whatever you need to log
     
-    // Reset form data after submission
-    formData.value = {
-      assignee: '', // Resetting to default
-      title: '',
-      description: '',
-      dueDate: '',
-      status: 'pending'
-    };
-    router.push('/')
+    
+    
+    router.push('/');
 
   } catch (error) {
     // Handle error during the request
     console.error('Error submitting task:', error);
-
   }
 };
+
 
 
 const closeModal = ()=>{
@@ -134,6 +135,13 @@ const closeModal = ()=>{
   onMounted(() => {
     userdetails();
   });
+
+  defineExpose({
+  formData
+});
+watch(() => formData.value.user, (newValue) => {
+  console.log('Selected User ID:', newValue)
+})
   </script>
   
   <style scoped>

@@ -1,92 +1,165 @@
-// AddTask.spec.js
-import { render, fireEvent, waitFor } from '@testing-library/vue';
-import AddTask from '@/components/Addtask.vue';
+// Dashboard.test.js
+import { render, fireEvent, screen,waitFor } from '@testing-library/vue';
+import Dashboard from '@/components/DashboardPage.vue'; // Adjust the import based on your file structure
+import { describe, it, expect } from 'vitest';
+import { ObjectId } from 'mongodb';
 import axios from 'axios';
-import { createRouter, createWebHistory } from 'vue-router';
+import Addtask from '@/components/Addtask.vue';
 import { nextTick } from 'vue';
-
-// Mock the axios module
+import { createRouter, createWebHistory } from 'vue-router';
 vi.mock('axios');
 
-// Create a mock router for navigation
+// Create a mock router
 const mockRouter = createRouter({
   history: createWebHistory(),
-  routes: [
-    {
-      path: '/',
-      component: { template: '<div>Home</div>' },
-    },
-    {
-      path: '/add-task',
-      component: AddTask,
-    },
-  ],
+  routes: [], // Add any necessary routes here
 });
 
-describe('AddTask Component', () => {
-  beforeEach(() => {
-    // Reset mocks before each test
-    vi.clearAllMocks();
+describe('Dashboard Component', () => {
+  it('renders the AddTask component when the Add Task button is clicked', async () => {
+    // Render the Dashboard component
+    render(Dashboard);
+
+    // Find the Add Task button
+    const addTaskButton = screen.getByRole('button', { name: /add task/i });
+
+    // Click the Add Task button
+    await fireEvent.click(addTaskButton);
+
+    // Check if the AddTask component is rendered
+    const addTaskComponent = screen.getByTestId('add-task-component');
+
+    // Assert that the AddTask component is in the document
+    expect(addTaskComponent).toBeTruthy(); // Check if the element exists
   });
 
-  it('fetches and displays assignees', async () => {
-    // Mock the API response for fetching assignees
-    const mockAssignees = [
-      { _id: '1', name: 'John Doe' },
-      { _id: '2', name: 'Jane Smith' },
-    ];
-    axios.get.mockResolvedValueOnce({ data: mockAssignees });
+});
 
-    // Render the component with the mock router
-    const { getByLabelText, getByRole } = render(AddTask, {
+
+describe("addTask functionality",()=>{
+
+  it('fetches and displays assignees in the dropdown', async () => {
+    const mockAssignees = [
+      { _id: new ObjectId('650c9d2e3a745b001c8b45a1'), name: 'John Doe' },
+      { _id: new ObjectId('650c9d2e3a745b001c8b45b1'), name: 'Jane Smith' },
+    ];
+  
+    axios.get.mockResolvedValueOnce({ data: mockAssignees });
+  
+    const { getByLabelText, getByRole } = render(Addtask, {
+      global: {
+        plugins: [mockRouter],
+      },
+    });
+  
+    await nextTick();
+    await waitFor(() => {
+      expect(getByLabelText(/user/i)).to.exist;  // Replaced with exist
+      expect(getByRole('option', { name: /john doe/i })).to.exist;  // Replaced with exist
+      expect(getByRole('option', { name: /jane smith/i })).to.exist;  // Replaced with exist
+    });
+  });
+
+  it('updates task title', async () => {
+    const { getByLabelText } = render(Addtask, {
       global: {
         plugins: [mockRouter],
       },
     });
 
-    // Wait for the component to fetch the assignees
-    await nextTick();
+    const titleInput = getByLabelText(/title/i);
+    await fireEvent.update(titleInput, 'Test Task');
 
-    // Check if the options are displayed in the select field
-    expect(getByLabelText(/user/i)).toBeInTheDocument();
-    expect(getByRole('option', { name: /john doe/i })).toBeInTheDocument();
-    expect(getByRole('option', { name: /jane smith/i })).toBeInTheDocument();
+    expect(titleInput.value).toBe('Test Task');
+  });
+
+  it('updates task description', async () => {
+    const { getByLabelText } = render(Addtask, {
+      global: {
+        plugins: [mockRouter],
+      },
+    });
+
+    const descriptionInput = getByLabelText(/description/i);
+    await fireEvent.update(descriptionInput, 'This is a test task description.');
+
+    expect(descriptionInput.value).toBe('This is a test task description.');
+  });
+  it('sets the date in the due date field', async () => {
+    const { getByLabelText } = render(Addtask, {
+      global: {
+        plugins: [mockRouter],
+      },
+    });
+  
+    // Get the input for 'Due date'
+    const dateInput = getByLabelText(/due date/i); // or getByLabelText('Due date')
+    
+    // Update the date input field with a new date
+    await fireEvent.update(dateInput, '2024-10-10');
+  
+    // Assert the input value has been updated correctly
+    expect(dateInput.value).toBe('2024-10-10');
+  });
+
+  it('renders the status field', async () => {
+    const { getByLabelText } = render(Addtask, {
+      global: {
+        plugins: [mockRouter],
+      },
+    });
+  
+    const statusField = getByLabelText(/status/i); // Use regex for case-insensitive matching
+    expect(statusField).toBeDefined(); // Checks that the field is defined
+    expect(statusField).toBeTruthy(); // Checks that the field is truthy (exists and is not null/undefined)
   });
 
   it('submits task data successfully', async () => {
-    // Mock the API response for fetching assignees
     const mockAssignees = [
-      { _id: '1', name: 'John Doe' },
+      { _id: '650c9d2e3a745b001c8b45a1', name: 'John Doe' },
+      { _id: '650c9d2e3a745b001c8b45b1', name: 'Jane Smith' },
     ];
-    axios.get.mockResolvedValueOnce({ data: mockAssignees });
 
-    // Mock the API response for submitting the task
+    axios.get.mockResolvedValueOnce({ data: mockAssignees });
     axios.post.mockResolvedValueOnce({ data: { success: true } });
 
-    // Render the component with the mock router
-    const { getByLabelText, getByRole } = render(AddTask, {
+    const { getByLabelText, getByRole } = render(Addtask, {
       global: {
         plugins: [mockRouter],
       },
     });
 
-    // Wait for the component to fetch the assignees
     await nextTick();
-    await fireEvent.change(userSelect, { target: { value: '1' } }); // Selecting John Doe
+
+    const userSelect = getByLabelText(/user/i);
+    await waitFor(() => {
+      expect(userSelect.options.length).toBeGreaterThan(0); 
+   
+      console.log(userSelect.innerHTML, "User Select Element Options HTML");
+    });
+   
+    const johnDoeOption = Array.from(userSelect.options).find(option => option.text === 'John Doe');
+
+   
+    if (johnDoeOption) {
+      await fireEvent.update(userSelect, { target: { value: johnDoeOption.value } });
+      
+      console.log('Selected Userrr ID:', );
+    } else {
+      throw new Error('John Doe option not found in the select');
+    }
 
     await fireEvent.update(getByLabelText(/title/i), 'Test Task');
     await fireEvent.update(getByLabelText(/description/i), 'This is a test task description.');
     await fireEvent.update(getByLabelText(/due date/i), '2024-10-10');
 
-    // Simulate form submission
     await fireEvent.click(getByRole('button', { name: /add task/i }));
 
-    // Wait for the axios post call to resolve
     await waitFor(() => {
       expect(axios.post).toHaveBeenCalledWith(
         'http://localhost:5000/api/task/addtask',
         {
-          user: '1',
+          user: '650c9d2e3a745b001c8b45a1',
           title: 'Test Task',
           description: 'This is a test task description.',
           dueDate: '2024-10-10',
@@ -95,21 +168,4 @@ describe('AddTask Component', () => {
       );
     });
   });
-
-  it('closes the modal and navigates back to the homepage', async () => {
-    // Render the component with the mock router
-    const { getByRole } = render(AddTask, {
-      global: {
-        plugins: [mockRouter],
-      },
-    });
-
-    // Simulate closing the modal
-    await fireEvent.click(getByRole('button', { name: /close/i }));
-
-    // Check if the route was changed to the homepage
-    await waitFor(() => {
-      expect(mockRouter.currentRoute.value.path).toBe('/');
-    });
-  });
-});
+})

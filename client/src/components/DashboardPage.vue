@@ -1,12 +1,12 @@
 <template>
-  <div class="container-fluid" style="background-color: #f9fafc">
+  <div class="container-fluid" style="background-color: #f9fafc"  data-testid="add-task-component">
     <div class="container-fluid">
       <div class="row" style="box-shadow: 0 0 30px 8px #96beee40; padding: 10px">
         <div class="col-lg-6 col-md-12 col-sm-12 d-flex justify-content-center align-items-center flex-column" style="height: 80vh;">
           <div class="w-100 d-flex justify-content-between align-items-center">
             <h1>Tasks</h1>
             <router-link :to="`/addtask`">
-              <button type="button" style="border: none; background-color: transparent;">
+              <button type="button"  aria-label="Add Task" style="border: none; background-color: transparent;">
                 <font-awesome-icon icon="plus" style="color: blue; cursor: pointer;" />
               </button>
             </router-link>

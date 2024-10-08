@@ -1,24 +1,22 @@
-import { fileURLToPath, URL } from 'node:url';
-import { defineConfig } from 'vite';
+import { defineConfig } from 'vitest/config';
 import vue from '@vitejs/plugin-vue';
+import { fileURLToPath, URL } from 'node:url';
 
-// https://vitejs.dev/config/
 export default defineConfig({
-  test: {
-    globals: true,
-    environment: 'jsdom',
-    coverage: {
-      provider: 'c8', // Ensure this is set correctly
-      reporter: ['text', 'html'], // Specify reporters you want
-      exclude: ['**/*.spec.js'], // Exclude test files from coverage
-    },
-  },
-  plugins: [
-    vue(),
-  ],
+  plugins: [vue()],
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
+  },
+  test: {
+    coverage: {
+      provider: 'c8', // Use c8 as the coverage provider
+      reporter: ['text', 'json', 'html'],
+      include: ['src/**/*.vue', 'src/**/*.js'], // Include source files for coverage
+      exclude: ['node_modules', 'test'], // Exclude test files and node_modules
+    },
+    globals: true,
+    environment: 'jsdom',
   },
 });
